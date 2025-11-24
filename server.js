@@ -66,16 +66,29 @@ if (!fs.existsSync(uploadsDir)) {
 
 /**
  * Load the current contents of the database file. If the file does not
- * exist, initialise it with empty arrays for memories and comments.
+ * exist, initialise it with empty arrays for memories and comments. A
+ * `progress` object is also initialised to track which itinerary items have
+ * been marked as completed. This persistent structure allows shared
+ * progress across sessions and survives redeploys.
  *
- * @returns {{memories: any[], comments: any[]}}
+ * @returns {{memories: any[], comments: any[], progress: object}}
  */
 function loadDB() {
+  // Initialise file with required keys if it doesn't exist. We include a
+  // `progress` object to persist the completion state of itinerary items.
   if (!fs.existsSync(dbFile)) {
-    fs.writeFileSync(dbFile, JSON.stringify({ memories: [], comments: [] }, null, 2));
+    fs.writeFileSync(
+      dbFile,
+      JSON.stringify({ memories: [], comments: [], progress: {} }, null, 2)
+    );
   }
   const raw = fs.readFileSync(dbFile);
-  return JSON.parse(raw);
+  const data = JSON.parse(raw);
+  // Ensure the expected top‑level keys exist to avoid undefined access.
+  if (!data.memories) data.memories = [];
+  if (!data.comments) data.comments = [];
+  if (!data.progress) data.progress = {};
+  return data;
 }
 
 /**
@@ -85,6 +98,10 @@ function loadDB() {
  * @param {object} data
  */
 function saveDB(data) {
+  // Normalise missing keys so they are always present in the saved file.
+  if (!data.memories) data.memories = [];
+  if (!data.comments) data.comments = [];
+  if (!data.progress) data.progress = {};
   fs.writeFileSync(dbFile, JSON.stringify(data, null, 2));
 }
 
@@ -404,6 +421,55 @@ app.get('/memories/:id/comments', requireAuth, (req, res) => {
   const db = loadDB();
   const comments = db.comments.filter((c) => c.memoryId === req.params.id);
   res.json(comments);
+});
+
+// -----------------------------------------------------------------------------
+// Public diary and itinerary progress endpoints
+//
+// GET /public-memories – Return all memories marked as public. This endpoint
+// does not require authentication and is used to populate the public diary.
+// Memories are sorted by date ascending (oldest first) to reflect
+// chronological order. The response includes the same fields stored in
+// the database. Clients should ignore any sensitive fields if present.
+app.get('/public-memories', (req, res) => {
+  const db = loadDB();
+  const publicMems = db.memories
+    .filter((m) => String(m.status) === 'public')
+    .sort((a, b) => {
+      // Order by provided date if available, otherwise createdAt
+      const dateA = new Date(a.date || a.createdAt || 0);
+      const dateB = new Date(b.date || b.createdAt || 0);
+      return dateA - dateB;
+    });
+  res.json(publicMems);
+});
+
+// GET /progress – Retrieve the current completion status of itinerary items.
+// The returned object maps "day-index" strings to boolean values. This
+// endpoint is public to allow visitors to read which items have been marked
+// as completed. Clients should treat missing keys as `false`.
+app.get('/progress', (req, res) => {
+  const db = loadDB();
+  res.json(db.progress || {});
+});
+
+// PUT /progress/:day/:index – Update the completion status of a specific
+// itinerary item. Only authenticated users may modify progress. The
+// request body must contain a JSON object with a boolean `completed` key.
+// The server stores the state keyed by "day-index" and returns the updated
+// progress object. Attempting to set a non‑boolean value results in 400.
+app.put('/progress/:day/:index', requireAuth, (req, res) => {
+  const { day, index } = req.params;
+  const { completed } = req.body;
+  // Validate input: completed must be boolean
+  if (typeof completed !== 'boolean') {
+    return res.status(400).json({ error: 'Parâmetro "completed" inválido' });
+  }
+  const db = loadDB();
+  const key = `${day}-${index}`;
+  db.progress[key] = completed;
+  saveDB(db);
+  res.json(db.progress);
 });
 
 // POST /memories/:id/reactions – Add a reaction to a memory. The body must
