@@ -18,12 +18,24 @@
   <meta name="theme-color" content="#e85d75" />
 </head>
   <body>
+    <!-- Navegação principal do aplicativo. Este menu permite alternar entre as
+         seções principais: o roteiro (home), dados da viagem/dicas, memórias
+         compartilhadas e o guia autônoma. A navegação usa âncoras para
+         rolar até as respectivas seções da página. -->
+    <nav id="main-nav" class="main-nav">
+      <a href="#home" class="nav-link">Roteiro</a>
+      <a href="#trip-data" class="nav-link">Dados da Viagem</a>
+      <a href="#tab-list" class="nav-link" id="memories-link">Memórias</a>
+      <a href="#guide" class="nav-link">Guia</a>
+    </nav>
+
     <!-- Hero section with our photo and trip overview. The image file
          ca-e-gui.jpg should live in the same directory as this HTML. Feel free
          to replace it with your own photo (keep the file name if you like).
          This hero sets the tone for the page and contains the title,
-         subtitle and countdown to the trip. -->
-    <header class="hero">
+         subtitle and countdown to the trip. The id "home" allows the
+         navigation link to scroll directly to esta seção. -->
+    <header class="hero" id="home">
       <!-- User supplied photo rendered via a responsive picture element. A modern
            WebP version is preferred with JPEG fallback for older browsers. -->
       <picture>
@@ -38,6 +50,14 @@
         <p class="subtitle">
           Carina &amp; Gui • 6 dias completos na cidade + bate‑volta a Colonia (Uruguai) e Tigre • Estilo leve, econômico e bem organizado.
         </p>
+        <!-- Breve descrição do propósito do app. Este texto dá contexto ao
+             visitante de que este site é um presente romântico, um registro
+             da lua de mel e um espaço para guardar memórias em casal. -->
+        <p class="app-description">
+          Este aplicativo foi criado como um presente de casamento: um registro da nossa lua de mel e um espaço carinhoso para
+          guardar memórias. Aqui você encontra o roteiro detalhado, dicas de viagem e um diário compartilhado para escrevermos juntos
+          cada momento vivido.
+        </p>
         <div id="countdown-container" class="countdown">
           Faltam <span id="countdown"></span> até embarcarmos nesta aventura! 💖
         </div>
@@ -49,13 +69,6 @@
          principal logo após o resumo geral.  -->
 
     <div class="page">
-
-    <div class="badge-row">
-      <span class="badge">Hotel: La Cisterna by DOT Suites (Microcentro)</span>
-      <span class="badge">Período na cidade: 16 a 21/01/2026</span>
-      <span class="badge">Voos LATAM • apenas bagagem de mão</span>
-      <span class="badge">Deslocamento: a pé, Uber, metrô e trem</span>
-    </div>
 
     <!-- Seção destacando porque a viagem é especial -->
     <section class="card special-trip">
@@ -431,30 +444,7 @@
       </div>
     </div>
 
-    <!-- Dicas finais -->
-    <div class="card tips-card">
-      <h2>💡 Dicas rápidas de economia &amp; segurança</h2>
-      <div class="section-title">Transporte</div>
-      <ul class="tips-list">
-        <li>Comprar o cartão <strong>SUBE</strong> em kioscos ou estações para usar metrô, ônibus e trens.</li>
-        <li>Para La Boca (Caminito) e volta tarde da noite, priorizar <strong>Uber/táxi</strong>.</li>
-        <li>Trem para Tigre: use sempre o ramal <strong>Retiro–Tigre</strong> da linha Mitre.</li>
-      </ul>
-
-      <div class="section-title">Comida barata</div>
-      <ul class="tips-list">
-        <li>Medialunas e cafés em padarias locais são muito mais baratos que cafés turísticos.</li>
-        <li>Guerrin, Kentucky, Las Cuartetas e mercados (San Telmo, Puerto de Frutos, Recoleta Mall) têm ótimo custo-benefício.</li>
-        <li>Para sorvetes: <strong>Rapanui</strong> e <strong>Franui</strong> valem cada colherada.</li>
-      </ul>
-
-    <div class="section-title">Segurança básica</div>
-      <ul class="tips-list">
-        <li>Evitar caminhar a pé entre La Boca e San Telmo ou zonas muito afastadas; use Uber.</li>
-        <li>Bolsa sempre fechada, celular mais guardado em ruas muito cheias (Florida, feiras, metrô).</li>
-        <li>Levar sempre uma cópia digital dos documentos e do seguro-viagem.</li>
-      </ul>
-    </div>
+    <!-- As dicas rápidas foram movidas para a seção "Dados da Viagem" abaixo -->
 
     <!-- Diário de bordo (será populado dinamicamente via script.js). Se não houver
          nenhuma nota registrada, esta seção permanecerá oculta. -->
@@ -462,6 +452,50 @@
       <h2>📖 Diário de bordo</h2>
       <p class="subtitle">Aqui ficam registradas as nossas notas e memórias ao longo da viagem.</p>
       <div id="diary-list"></div>
+    </section>
+
+    <!-- Dados da viagem e dicas gerais. Esta seção contém as informações
+         básicas da viagem (hotel, datas, voos, deslocamento) e as dicas
+         rápidas de economia e segurança originalmente exibidas na home. -->
+    <section id="trip-data" class="card trip-data">
+      <h2>🧳 Dados da Viagem &amp; Dicas</h2>
+      <div class="badge-row">
+        <span class="badge">Hotel: La Cisterna by DOT Suites (Microcentro)</span>
+        <span class="badge">Período na cidade: 16 a 21/01/2026</span>
+        <span class="badge">Voos LATAM • apenas bagagem de mão</span>
+        <span class="badge">Deslocamento: a pé, Uber, metrô e trem</span>
+      </div>
+      <div class="tips-content">
+        <h3>💡 Dicas rápidas de economia &amp; segurança</h3>
+        <div class="section-title">Transporte</div>
+        <ul class="tips-list">
+          <li>Comprar o cartão <strong>SUBE</strong> em kioscos ou estações para usar metrô, ônibus e trens.</li>
+          <li>Para La Boca (Caminito) e volta tarde da noite, priorizar <strong>Uber/táxi</strong>.</li>
+          <li>Trem para Tigre: use sempre o ramal <strong>Retiro–Tigre</strong> da linha Mitre.</li>
+        </ul>
+        <div class="section-title">Comida barata</div>
+        <ul class="tips-list">
+          <li>Medialunas e cafés em padarias locais são muito mais baratos que cafés turísticos.</li>
+          <li>Guerrin, Kentucky, Las Cuartetas e mercados (San Telmo, Puerto de Frutos, Recoleta Mall) têm ótimo custo-benefício.</li>
+          <li>Para sorvetes: <strong>Rapanui</strong> e <strong>Franui</strong> valem cada colherada.</li>
+        </ul>
+        <div class="section-title">Segurança básica</div>
+        <ul class="tips-list">
+          <li>Evitar caminhar a pé entre La Boca e San Telmo ou zonas muito afastadas; use Uber.</li>
+          <li>Bolsa sempre fechada, celular mais guardado em ruas muito cheias (Florida, feiras, metrô).</li>
+          <li>Levar sempre uma cópia digital dos documentos e do seguro-viagem.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Guia autônoma. Esta seção apresenta orientações gerais sobre como usar
+         o aplicativo. Concentre aqui as dicas de navegação, marcação de
+         atividades e demais informações que não pertencem ao roteiro ou aos
+         dados da viagem. -->
+    <section id="guide" class="card guide-section">
+      <h2>📘 Guia Autônoma</h2>
+      <p>Esta seção reúne orientações gerais sobre como usar o aplicativo: como navegar entre os dias do roteiro, marcar atividades como concluídas e adicionar notas pessoais. Leia estas dicas antes de começar e volte aqui sempre que tiver dúvidas.</p>
+      <!-- Conteúdo adicional do guia pode ser inserido aqui no futuro -->
     </section>
   </div>
 
