@@ -12,6 +12,14 @@ const urlsToCache = [
   '/ca-e-gui.jpg',
   '/icon-192.png',
   '/icon-512.png'
+  ,
+  // Novos endpoints de API para diário público e progresso devem ser
+  // armazenados em cache para suportar visualização offline. Ao incluir
+  // estas URLs estáticas, o service worker irá servir respostas em cache
+  // quando a rede estiver indisponível. Note que estes dados podem ficar
+  // desatualizados até que o usuário se reconecte.
+  '/public-memories',
+  '/progress'
 ];
 
 self.addEventListener('install', (event) => {
