@@ -33,7 +33,10 @@
   do service worker.
 */
 
-document.addEventListener('DOMContentLoaded', () => {
+// We wrap the DOMContentLoaded handler in an async function to allow
+// awaiting asynchronous operations like authentication and progress
+// retrieval before initialising interactive components.
+document.addEventListener('DOMContentLoaded', async () => {
   // Extrai dados dos cartões de dia presentes no HTML e remove-os do DOM.
   const itineraryData = parseItinerary();
   // Obtém a seção do diário antes de removê-la do fluxo.
@@ -49,7 +52,13 @@ document.addEventListener('DOMContentLoaded', () => {
   initBackToTop();
   registerServiceWorker();
 
-  // Atualiza o diário inicialmente para refletir notas salvas.
+  // Verifica estado de autenticação e carrega progresso antes de
+  // inicializar o diário. Isto garante que o estado de conclusão de
+  // cada item seja consistente e que o diário público exiba memórias
+  // atualizadas.
+  await checkAuthStatus();
+  await loadProgress();
+  // Atualiza o diário inicialmente para refletir memórias públicas.
   updateDiary();
 
   // Constrói as abas de navegação e associa os painéis.
@@ -494,7 +503,9 @@ function createPanel(id) {
 function initScheduleItemsForDay(panel, dayId) {
   const listItems = panel.querySelectorAll('.schedule li');
   listItems.forEach((li, index) => {
-    const itemKey = `day-${dayId}-item-${index}`;
+    // Unique key for this itinerary item. We now use the format
+    // `${dayId}-${index}` for persisting completion state in the backend.
+    const itemKey = `${dayId}-${index}`;
     // Contêiner de ações
     const actions = document.createElement('span');
     actions.className = 'item-actions';
@@ -514,27 +525,63 @@ function initScheduleItemsForDay(panel, dayId) {
     const noteDisplay = document.createElement('div');
     noteDisplay.className = 'note-display hidden';
     li.appendChild(noteDisplay);
-    // Recupera estado salvo
+    // Recupera nota salva no localStorage. A conclusão agora é carregada
+    // a partir do backend via window.progress, portanto ignoramos
+    // qualquer estado de conclusão armazenado localmente. Salvamos
+    // apenas o campo `note` sob a mesma chave para compatibilidade.
     let saved;
     try {
-      saved = JSON.parse(localStorage.getItem(itemKey)) || {};
+      saved = JSON.parse(localStorage.getItem(`day-${dayId}-item-${index}`)) || {};
     } catch (e) {
       saved = {};
     }
-    if (saved.completed) {
+    // Aplica classe de completado com base no progresso global.
+    if (window.progress && window.progress[itemKey]) {
       li.classList.add('completed');
     }
+    // Exibe nota, se houver
     if (saved.note) {
       noteDisplay.innerHTML = `<strong>Nota:</strong> ${saved.note}`;
       noteDisplay.classList.remove('hidden');
     }
-    // Manipulador de concluir
-    doneBtn.addEventListener('click', (ev) => {
+    // Manipulador de concluir. Restrito a usuários autenticados.
+    doneBtn.addEventListener('click', async (ev) => {
       ev.stopPropagation();
-      li.classList.toggle('completed');
-      saved.completed = li.classList.contains('completed');
-      localStorage.setItem(itemKey, JSON.stringify(saved));
-      updateDayProgress(dayId);
+      // Se o usuário não estiver logado, impede alteração e informa.
+      if (!window.isLoggedIn) {
+        alert('Faça login para marcar ou desmarcar um item como cumprido.');
+        return;
+      }
+      const currentlyCompleted = li.classList.contains('completed');
+      const newState = !currentlyCompleted;
+      try {
+        const res = await fetch(`/progress/${dayId}/${index}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ completed: newState }),
+        });
+        if (res.status === 401) {
+          alert('Sua sessão expirou. Faça login novamente para continuar.');
+          // Recarrega estado de autenticação
+          await checkAuthStatus();
+          return;
+        }
+        if (!res.ok) {
+          throw new Error('Falha ao atualizar progresso');
+        }
+        const progressData = await res.json();
+        window.progress = progressData || {};
+        // Atualiza visual do item e rótulo da aba
+        if (newState) {
+          li.classList.add('completed');
+        } else {
+          li.classList.remove('completed');
+        }
+        updateDayProgress(dayId);
+      } catch (_err) {
+        alert('Erro ao atualizar progresso. Tente novamente mais tarde.');
+      }
     });
     // Manipulador de nota
     noteBtn.addEventListener('click', (ev) => {
@@ -552,7 +599,11 @@ function initScheduleItemsForDay(panel, dayId) {
           noteDisplay.innerHTML = `<strong>Nota:</strong> ${saved.note}`;
           noteDisplay.classList.remove('hidden');
         }
-        localStorage.setItem(itemKey, JSON.stringify(saved));
+        // Persist only the note locally. We maintain the original key
+        // format to avoid clobbering progress data.
+        localStorage.setItem(`day-${dayId}-item-${index}`, JSON.stringify(saved));
+        // Atualiza o diário público (não afeta notas pessoais, mas pode
+        // reordenar a UI de memórias públicas caso já exista).  
         updateDiary();
       }
     });
@@ -577,12 +628,9 @@ function updateDayProgress(dayId) {
   const total = day.schedule.length;
   let completed = 0;
   for (let i = 0; i < total; i++) {
-    const key = `day-${dayId}-item-${i}`;
-    try {
-      const data = JSON.parse(localStorage.getItem(key));
-      if (data && data.completed) completed += 1;
-    } catch (e) {
-      // ignora erros
+    const key = `${dayId}-${i}`;
+    if (window.progress && window.progress[key]) {
+      completed += 1;
     }
   }
   const tab = document.getElementById('tab-' + dayId);
@@ -597,6 +645,43 @@ function updateDayProgress(dayId) {
     } else {
       tab.textContent = baseLabel;
     }
+  }
+}
+
+/**
+ * Verifica o status de autenticação do usuário junto ao backend. Define
+ * `window.isLoggedIn` como true quando houver um usuário de sessão
+ * válida, ou false caso contrário. Esta função é utilizada para
+ * condicionar ações restritas, como a marcação de itens como cumpridos.
+ */
+async function checkAuthStatus() {
+  try {
+    const res = await fetch('/auth/me', { credentials: 'include' });
+    const data = await res.json();
+    window.isLoggedIn = !!(data && data.user);
+  } catch (_err) {
+    window.isLoggedIn = false;
+  }
+}
+
+/**
+ * Carrega o objeto de progresso armazenado no backend e salva em
+ * `window.progress`. A estrutura retornada associa cada chave
+ * "day-index" a um booleano indicando se aquele item foi marcado
+ * como concluído. Após carregar o progresso, recalcula o avanço de
+ * cada dia para atualizar os rótulos das abas.
+ */
+async function loadProgress() {
+  try {
+    const res = await fetch('/progress');
+    const data = await res.json();
+    window.progress = data || {};
+  } catch (_err) {
+    window.progress = {};
+  }
+  // Atualiza progresso de todas as abas, se já houver dados de roteiro.
+  if (Array.isArray(window.itineraryData)) {
+    window.itineraryData.forEach((day) => updateDayProgress(day.id));
   }
 }
 
@@ -635,61 +720,120 @@ function restoreLastDay(itineraryData) {
  * mensagem "Nenhuma nota registrada" é mostrada quando não
  * existem entradas salvas.
  */
-function updateDiary() {
+async function updateDiary() {
   const diarySection = document.getElementById('diary');
   const diaryList = document.getElementById('diary-list');
   if (!diarySection || !diaryList) return;
-  const entries = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (!key || !key.startsWith('day-')) continue;
-    try {
-      const data = JSON.parse(localStorage.getItem(key));
-      if (data && data.note) {
-        const match = key.match(/^day-(\d+)-item-(\d+)$/);
-        if (match) {
-          entries.push({
-            day: parseInt(match[1], 10),
-            note: data.note,
-          });
-        }
-      }
-    } catch (e) {
-      // ignora erros
+  // Fetch public memories from the backend. If the request fails, we
+  // gracefully handle the error by showing an empty state.
+  let memories = [];
+  try {
+    const res = await fetch('/public-memories');
+    if (res.ok) {
+      memories = await res.json();
     }
+  } catch (_err) {
+    // Network or parsing error: leave memories empty
   }
-  entries.sort((a, b) => a.day - b.day);
   diaryList.innerHTML = '';
-  entries.forEach((entry) => {
-    const div = document.createElement('div');
-    div.className = 'diary-entry';
-    const daySpan = document.createElement('span');
-    daySpan.className = 'entry-day';
-    daySpan.textContent = `Dia ${entry.day}:`;
-    const noteSpan = document.createElement('span');
-    noteSpan.className = 'entry-note';
-    noteSpan.textContent = ` ${entry.note}`;
-    div.appendChild(daySpan);
-    div.appendChild(noteSpan);
-    diaryList.appendChild(div);
-  });
-  // Mostra ou oculta a seção com base nas entradas
-  if (entries.length > 0) {
+  if (!memories || memories.length === 0) {
+    const msg = document.createElement('p');
+    msg.className = 'subtitle';
+    msg.textContent = 'Nenhuma memória pública registrada ainda.';
+    diaryList.appendChild(msg);
     diarySection.classList.remove('hidden');
   } else {
-    diarySection.classList.add('hidden');
+    // Render each public memory as a card. We reuse some of the
+    // styles defined for memory cards to maintain visual consistency.
+    memories.forEach((mem) => {
+      const card = document.createElement('div');
+      card.className = 'card memory-card';
+      card.style.marginBottom = '16px';
+      // Título
+      const h3 = document.createElement('h3');
+      h3.textContent = mem.title || '(Sem título)';
+      card.appendChild(h3);
+      // Data
+      const meta = document.createElement('div');
+      meta.className = 'memory-meta';
+      const date = new Date(mem.date || mem.createdAt || Date.now());
+      const dateStr = date.toLocaleDateString('pt-BR', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+      meta.textContent = `${dateStr}`;
+      meta.style.fontSize = '0.85rem';
+      meta.style.color = '#555';
+      card.appendChild(meta);
+      // Texto
+      if (mem.text) {
+        const p = document.createElement('p');
+        p.textContent = mem.text;
+        card.appendChild(p);
+      }
+      // Tags
+      if (mem.tags && mem.tags.length > 0) {
+        const tagsDiv = document.createElement('div');
+        tagsDiv.style.marginTop = '8px';
+        mem.tags.forEach((t) => {
+          const span = document.createElement('span');
+          span.className = 'tag';
+          span.textContent = t;
+          tagsDiv.appendChild(span);
+        });
+        card.appendChild(tagsDiv);
+      }
+      // Local
+      if (mem.location) {
+        const locDiv = document.createElement('div');
+        locDiv.style.marginTop = '4px';
+        locDiv.style.fontSize = '0.85rem';
+        locDiv.style.color = '#555';
+        locDiv.textContent = `Local: ${mem.location}`;
+        card.appendChild(locDiv);
+      }
+      // Mídia
+      if (mem.media && mem.media.length > 0) {
+        const mediaContainer = document.createElement('div');
+        mediaContainer.style.display = 'flex';
+        mediaContainer.style.flexWrap = 'wrap';
+        mediaContainer.style.gap = '8px';
+        mediaContainer.style.marginTop = '8px';
+        mem.media.forEach((url) => {
+          const ext = String(url).split('.').pop().toLowerCase();
+          if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext)) {
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = 'Mídia da memória';
+            img.style.maxWidth = '100%';
+            img.style.height = 'auto';
+            img.style.borderRadius = '4px';
+            mediaContainer.appendChild(img);
+          } else if (['mp4', 'mov', 'mkv', 'avi'].includes(ext)) {
+            const vid = document.createElement('video');
+            vid.src = url;
+            vid.controls = true;
+            vid.style.maxWidth = '100%';
+            vid.style.maxHeight = '200px';
+            mediaContainer.appendChild(vid);
+          }
+        });
+        card.appendChild(mediaContainer);
+      }
+      diaryList.appendChild(card);
+    });
+    diarySection.classList.remove('hidden');
   }
-  // Atualiza o painel de diário se estiver criado
+  // Update the diary tab panel message state. Remove any old messages.
   const diaryPanel = window.tabPanels && window.tabPanels['diary'];
   if (diaryPanel) {
-    // Remove mensagem antiga
     const oldMsg = diaryPanel.querySelector('.no-notes-msg');
     if (oldMsg) oldMsg.remove();
-    if (entries.length === 0) {
-      // Cria mensagem informativa
+    if (!memories || memories.length === 0) {
       const msg = document.createElement('p');
       msg.className = 'no-notes-msg subtitle';
-      msg.textContent = 'Nenhuma nota registrada ainda.';
+      msg.textContent = 'Nenhuma memória pública registrada ainda.';
       diaryPanel.appendChild(msg);
     }
   }
