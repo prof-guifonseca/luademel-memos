@@ -56,6 +56,27 @@ document.addEventListener('DOMContentLoaded', () => {
   buildTabs(itineraryData, diarySection);
   // Restaura o último dia visitado a partir da URL ou localStorage.
   restoreLastDay(itineraryData);
+
+  // Permite que o link "Memórias" na navegação principal abra diretamente
+  // a aba de memórias. O link está definido em index.html com id
+  // "memories-link" e âncora para #tab-list. Ao clicar, evitamos o
+  // comportamento padrão do navegador (rolar apenas) e chamamos
+  // openTab('memories') para carregar o painel de memórias. Em seguida,
+  // rolamos até a área de navegação por dias para que o usuário veja o
+  // conteúdo.
+  const memNavLink = document.getElementById('memories-link');
+  if (memNavLink) {
+    memNavLink.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      if (typeof openTab === 'function') {
+        openTab('memories');
+      }
+      const tabNav = document.getElementById('tab-list');
+      if (tabNav) {
+        tabNav.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  }
 });
 
 /**
