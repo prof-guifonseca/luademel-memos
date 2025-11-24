@@ -463,57 +463,6 @@
       <p class="subtitle">Aqui ficam registradas as nossas notas e memórias ao longo da viagem.</p>
       <div id="diary-list"></div>
     </section>
-    <!-- Diário compartilhado com login. Requer configurar Supabase (URL + anon key) -->
-    <section class="card cloud-diary" id="cloud-diary">
-      <h2>🔐 Diário compartilhado na nuvem</h2>
-      <p class="subtitle">Entre com e-mail e senha para salvar memórias que ficam disponíveis para nós dois.</p>
-
-      <div class="notice" id="cloud-diary-notice">
-        Adicione a URL e a anon key do seu projeto Supabase nas metas <code>supabase-url</code> e
-        <code>supabase-anon-key</code> para ativar o login e o diário compartilhado.
-      </div>
-
-      <form id="auth-form" class="auth-form hidden" autocomplete="on">
-        <div class="form-row">
-          <label for="auth-email">E-mail</label>
-          <input id="auth-email" name="email" type="email" required placeholder="seu@email.com" />
-        </div>
-        <div class="form-row">
-          <label for="auth-password">Senha</label>
-          <input id="auth-password" name="password" type="password" required placeholder="••••••••" minlength="6" />
-        </div>
-        <div class="auth-actions">
-          <button type="submit" data-action="login">Entrar</button>
-          <button type="submit" data-action="signup" class="ghost">Criar conta</button>
-          <button type="button" id="logout-btn" class="secondary hidden">Sair</button>
-        </div>
-        <p id="auth-feedback" class="feedback" role="status" aria-live="polite"></p>
-      </form>
-
-      <div id="cloud-diary-area" class="hidden">
-        <form id="cloud-entry-form" class="entry-form">
-          <div class="form-row inline">
-            <label for="entry-day">Dia</label>
-            <input id="entry-day" name="day" type="number" min="1" max="31" placeholder="1" />
-          </div>
-          <div class="form-row">
-            <label for="entry-note">Escreva sua memória</label>
-            <textarea id="entry-note" name="note" rows="3" required placeholder="O que fizemos hoje?" maxlength="1000"></textarea>
-          </div>
-          <div class="auth-actions">
-            <button type="submit">Salvar memória</button>
-            <button type="button" id="refresh-entries" class="ghost">Atualizar lista</button>
-          </div>
-          <p id="entry-feedback" class="feedback" role="status" aria-live="polite"></p>
-        </form>
-
-        <div id="cloud-entries" class="cloud-entries">
-          <p class="subtitle">Entradas mais recentes aparecerão aqui.</p>
-          <div id="cloud-entry-list" class="entry-list"></div>
-        </div>
-      </div>
-    </section>
-
   </div>
 
   <!-- Botão flutuante “Voltar ao topo” -->
