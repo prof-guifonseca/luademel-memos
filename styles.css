@@ -759,6 +759,67 @@ a {
   margin-bottom: 12px;
 }
 
+/* ------------------------------------------------------------------
+   Navegação principal
+   A barra de navegação no topo da página conecta as seções principais
+   (roteiro, dados da viagem, memórias e guia). Ela permanece visível
+   quando o usuário rola a página e utiliza um fundo semitransparente
+   para se adaptar tanto ao modo claro quanto ao escuro. */
+.main-nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  background: var(--nav-bg);
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+.main-nav .nav-link {
+  color: var(--text-main);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.main-nav .nav-link:hover,
+.main-nav .nav-link:focus {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* Descrição do aplicativo dentro do hero */
+.app-description {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-top: 6px;
+  max-width: 600px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Ajuste para a seção de dados da viagem */
+#trip-data {
+  margin-top: 32px;
+}
+#trip-data h2 {
+  margin-bottom: 12px;
+}
+
+/* Guia autônoma styling */
+#guide {
+  margin-top: 32px;
+}
+#guide h2 {
+  margin-bottom: 12px;
+}
+
 html.theme-dark .cloud-entry {
   background: #1e1f2b;
 }
