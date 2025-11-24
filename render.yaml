@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: luademel-memos
+    env: node
+    plan: free
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "18"
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: USERS
+        value: '{"carina":"amore","gui":"amoreGui","admin":"password"}'
+      - key: ORIGIN
+        value: "https://seu-dominio.onrender.com"
+      - key: DATA_DIR
+        value: "/var/data"
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1
