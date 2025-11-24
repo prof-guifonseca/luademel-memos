@@ -42,18 +42,22 @@
     const loginSection = document.createElement('section');
     loginSection.id = 'mem-login-section';
     loginSection.className = 'card cloud-diary';
+    // Interface de login: solicitamos apenas usuário e senha, sem e-mail.
+    // A ação de cadastro foi removida para unificar o login com as credenciais
+    // existentes (por exemplo, gui/senha123). As mensagens foram atualizadas
+    // para um tom mais afetuoso em caso de erro.
     loginSection.innerHTML = `
       <h3>🔐 Diário compartilhado na nuvem</h3>
-      <p class="subtitle">Entre com e-mail e senha para salvar e ler memórias conjuntas.</p>
+      <p class="subtitle">Entre com usuário e senha para salvar e ler memórias conjuntas.</p>
       <form id="mem-login-form" class="auth-form" autocomplete="on">
         <div class="form-row">
-          <label for="mem-auth-email">E-mail</label>
+          <label for="mem-auth-username">Usuário</label>
           <input
-            id="mem-auth-email"
+            id="mem-auth-username"
             name="username"
-            type="email"
+            type="text"
             required
-            placeholder="seu@email.com"
+            placeholder="usuario"
           />
         </div>
         <div class="form-row">
@@ -64,12 +68,11 @@
             type="password"
             required
             placeholder="••••••••"
-            minlength="6"
+            minlength="4"
           />
         </div>
         <div class="auth-actions">
           <button type="submit" data-action="login">Entrar</button>
-          <button type="submit" data-action="signup" class="ghost">Criar conta</button>
           <button type="button" id="mem-logout-btn" class="secondary hidden">Sair</button>
         </div>
         <p id="mem-auth-feedback" class="feedback" role="status" aria-live="polite"></p>
@@ -77,7 +80,7 @@
     `;
 
     const loginForm = loginSection.querySelector('#mem-login-form');
-    const userInput = loginSection.querySelector('#mem-auth-email');
+    const userInput = loginSection.querySelector('#mem-auth-username');
     const passInput = loginSection.querySelector('#mem-auth-password');
     const logoutBtn = loginSection.querySelector('#mem-logout-btn');
     const loginFeedback = loginSection.querySelector('#mem-auth-feedback');
@@ -598,15 +601,8 @@
       loginFeedback.textContent = '';
       loginFeedback.classList.remove('error');
 
-      const action =
-        (ev.submitter && ev.submitter.dataset && ev.submitter.dataset.action) || 'login';
 
-      if (action !== 'login') {
-        loginFeedback.textContent =
-          'Cadastro ainda não disponível aqui. Use a conta existente para entrar.';
-        loginFeedback.classList.add('error');
-        return;
-      }
+      // Ações de cadastro foram removidas. Sempre processamos como login.
 
       const username = userInput.value.trim();
       const password = passInput.value.trim();
@@ -621,15 +617,16 @@
         });
         const data = await res.json();
         if (res.ok) {
-          loginFeedback.textContent = 'Login realizado com sucesso!';
+          loginFeedback.textContent = 'Login realizado com sucesso! ✨';
           // Login bem-sucedido
           showApp();
         } else {
-          loginFeedback.textContent = data.error || 'Falha no login.';
+          // Quando o servidor retorna erro, exibimos uma mensagem calorosa
+          loginFeedback.textContent = data.error || 'Usuário ou senha inválidos. Por favor, tente novamente.';
           loginFeedback.classList.add('error');
         }
       } catch (err) {
-        loginFeedback.textContent = 'Erro ao conectar.';
+        loginFeedback.textContent = 'Erro ao conectar. Por favor, tente novamente mais tarde.';
         loginFeedback.classList.add('error');
       }
     });
