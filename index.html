@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Mobile‑first meta tag to ensure proper scaling on handheld devices -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roteiro Buenos Aires – Jan 2026</title>
+  <!-- Preconnect hints for Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Import a modern sans‑serif font for better legibility -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet" />
+  <!-- Folha de estilos externa -->
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Manifesto para PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <!-- Theme color will be overwritten by CSS variables; kept here for PWA splash screens -->
+  <meta name="theme-color" content="#e85d75" />
+</head>
+  <body>
+    <!-- Hero section with our photo and trip overview. The image file
+         ca-e-gui.jpg should live in the same directory as this HTML. Feel free
+         to replace it with your own photo (keep the file name if you like).
+         This hero sets the tone for the page and contains the title,
+         subtitle and countdown to the trip. -->
+    <header class="hero">
+      <!-- User supplied photo rendered via a responsive picture element. A modern
+           WebP version is preferred with JPEG fallback for older browsers. -->
+      <picture>
+        <source type="image/webp" srcset="ca-e-gui.webp" />
+        <img src="ca-e-gui.jpg" alt="Foto de casal sorrindo em frente a uma fonte" class="hero-img" />
+      </picture>
+      <!-- Overlay with gradient and text -->
+      <div class="hero-content">
+        <!-- Theme toggle button; updated dynamically in script.js with sun/moon -->
+        <button id="theme-toggle" class="theme-toggle" aria-label="Alternar tema">🌙</button>
+        <h1>Roteiro Buenos Aires – Janeiro 2026</h1>
+        <p class="subtitle">
+          Carina &amp; Gui • 6 dias completos na cidade + bate‑volta a Colonia (Uruguai) e Tigre • Estilo leve, econômico e bem organizado.
+        </p>
+        <div id="countdown-container" class="countdown">
+          Faltam <span id="countdown"></span> até embarcarmos nesta aventura! 💖
+        </div>
+      </div>
+    </header>
+
+    <!-- As abas serão inseridas dinamicamente dentro da seção principal (page).
+         A barra original de navegação foi movida para junto do conteúdo
+         principal logo após o resumo geral.  -->
+
+    <div class="page">
+
+    <div class="badge-row">
+      <span class="badge">Hotel: La Cisterna by DOT Suites (Microcentro)</span>
+      <span class="badge">Período na cidade: 16 a 21/01/2026</span>
+      <span class="badge">Voos LATAM • apenas bagagem de mão</span>
+      <span class="badge">Deslocamento: a pé, Uber, metrô e trem</span>
+    </div>
+
+    <!-- Seção destacando porque a viagem é especial -->
+    <section class="card special-trip">
+      <h2>💖 Por que esta viagem é especial</h2>
+      <p>
+        Porque é a nossa primeira grande aventura INTERNACIONAL a dois! Vamos celebrar a vida,
+        experimentar sabores, caminhar de mãos dadas por ruas históricas e
+        colecionar memórias que vão nos acompanhar para sempre.
+      </p>
+    </section>
+
+    <!-- A contagem regressiva agora vive dentro do hero. Esse espaço
+         anteriormente exibido foi removido para evitar conteúdo duplicado. -->
+
+    <!-- Resumo geral -->
+    <div class="grid">
+      <div class="card">
+        <h2>✈️ Voos &amp; estrutura geral</h2>
+        <h3>Ida – 15 para 16 de janeiro</h3>
+        <ul class="info-list">
+          <li><strong>Londrina (LDB)</strong> → 19h15 – 15/01</li>
+          <li><strong>Buenos Aires (EZE)</strong> → chegada ~01h00 – 16/01</li>
+          <li>Chegada no hotel prevista entre 02h30 e 03h00.</li>
+        </ul>
+
+        <h3>Volta – madrugada de 22 de janeiro</h3>
+        <ul class="info-list">
+          <li><strong>Buenos Aires (EZE)</strong> → 02h25 – 22/01</li>
+          <li><strong>Londrina (LDB)</strong> → chegada ~09h05</li>
+          <li>Saída recomendada do hotel: <strong>00h30</strong> (Uber até EZE).</li>
+        </ul>
+
+        <div class="highlight">
+          Chegar no aeroporto com ~1h15 de antecedência é suficiente neste caso
+          (voo de madrugada, apenas bagagem de mão e check-in feito online).
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🧭 Resumo por dia</h2>
+        <ul class="info-list">
+          <li><strong>Dia 1 – Sex 16/01:</strong> Centro + Recoleta + MALBA</li>
+          <li><strong>Dia 2 – Sáb 17/01:</strong> Palermo completo (Ecoparque, Jardins, Floralis, UBA)</li>
+          <li><strong>Dia 3 – Dom 18/01:</strong> Caminito cedo + Feira de San Telmo + Costanera</li>
+          <li><strong>Dia 4 – Seg 19/01:</strong> Plaza de Mayo + Casa Rosada + Puerto Madero</li>
+          <li><strong>Dia 5 – Ter 20/01:</strong> Colonia del Sacramento (Uruguai)</li>
+          <li><strong>Dia 6 – Qua 21/01:</strong> Tigre de trem + noite leve no Centro</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Navegação em abas (tabs) e contêiner de painéis. Esta barra
+         fica logo após o resumo geral para que a visão geral da
+         viagem seja apresentada antes dos detalhes de cada dia. O
+         conteúdo será populado via JavaScript. -->
+    <nav id="tab-list" class="day-nav tab-list" role="tablist" aria-label="Navegação de dias e diário"></nav>
+    <div id="tab-panels" class="tab-panels"></div>
+
+    <!-- Seção de memórias da capa. Quando autenticado, esta área exibirá
+         as memórias que não estão vinculadas a um dia específico (campo
+         day vazio). Inicialmente fica oculta até que o conteúdo seja
+         carregado via script. O estilo card reaproveita o visual das
+         demais seções. -->
+    <section id="cover-memories" class="card hidden"></section>
+
+    <!-- Dia 1 -->
+    <div class="card day-card" data-day="1">
+      <div class="day">
+        <div class="day-header">
+          <div class="day-title">Dia 1 – Sexta, 16/01 – Centro + Recoleta + MALBA</div>
+          <div class="day-sub">Chegada de madrugada • Dia leve, mas com pontos clássicos</div>
+        </div>
+        <ul class="schedule">
+          <li>
+            <span class="time">Manhã (10h00–11h30)</span>
+            Obelisco e Av. 9 de Julio
+            <div class="transport">👣 7 min a pé do hotel.</div>
+          </li>
+          <li>
+            <span class="time">11h30–12h30</span>
+            Almoço na Pizzaria <strong>Guerrin</strong> <span class="tag">pizza clássica e barata</span>
+            <div class="transport">👣 5 min a pé do Obelisco pela Av. Corrientes.</div>
+          </li>
+          <li>
+            <span class="time">13h00–14h00</span>
+            Caminhada pela Calle Corrientes até Calle Florida + Galerías Pacífico
+            <div class="transport">👣 ~15 min caminhando; tudo bem central.</div>
+          </li>
+          <li>
+            <span class="time">14h30–15h30</span>
+            Livraria <strong>El Ateneo Grand Splendid</strong>
+            <div class="transport">🚗 Uber (10–15 min) das Galerías Pacífico até o Ateneo.</div>
+          </li>
+          <li>
+            <span class="time">15h30–16h00</span>
+            Passeio pela <strong>Avenida Alvear</strong> <span class="tag">“rua que parece Paris”</span>
+            <div class="transport">👣 O Ateneo fica a poucos minutos da Av. Santa Fe; daí é só seguir até a Alvear.</div>
+          </li>
+          <li>
+            <span class="time">16h00–17h30</span>
+            Bairro da Recoleta: <strong>Cemitério da Recoleta</strong> + Plaza Francia
+            <div class="transport">👣 10–12 min a pé a partir da Av. Alvear.</div>
+          </li>
+          <li>
+            <span class="time">17h30–18h30</span>
+            Sorvetes e mimos: <strong>Rapanui</strong> &amp; <strong>Franui</strong> no Recoleta Mall
+            <div class="transport">👣 O shopping fica ao lado do cemitério.</div>
+          </li>
+          <li>
+            <span class="time">18h30–20h00</span>
+            Museu <strong>MALBA</strong> (dependendo do ritmo)
+            <div class="transport">🚗 Uber rápido (10 min) do Recoleta Mall ao MALBA.</div>
+          </li>
+          <li>
+            <span class="time">Noite</span>
+            Retorno ao hotel e descanso
+            <div class="transport">🚗 Uber do MALBA ao hotel (~15 min).</div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Dia 2 -->
+    <div class="card day-card" data-day="2">
+      <div class="day">
+        <div class="day-header">
+          <div class="day-title">Dia 2 – Sábado, 17/01 – Palermo completo</div>
+          <div class="day-sub">Ecoparque, Jardins, Bosques, Floralis e Faculdade de Direito</div>
+        </div>
+        <ul class="schedule">
+          <li>
+            <span class="time">09h30</span>
+            Saída do hotel rumo ao <strong>Ecoparque</strong>
+            <div class="transport">🚗 Uber (15–20 min) direto do hotel ao Ecoparque Buenos Aires.</div>
+          </li>
+          <li>
+            <span class="time">10h00–11h00</span>
+            <strong>Ecoparque</strong> – área verde com animais resgatados <span class="tag">Palermo</span>
+          </li>
+          <li>
+            <span class="time">11h00–11h45</span>
+            <strong>Jardim Botânico</strong>
+            <div class="transport">👣 5 min a pé do Ecoparque.</div>
+          </li>
+          <li>
+            <span class="time">11h45–13h00</span>
+            <strong>Jardim Japonês</strong>
+            <div class="transport">👣 15 min a pé (ou Uber curtinho de 5 min se estiver muito calor).</div>
+          </li>
+          <li>
+            <span class="time">13h00–14h00</span>
+            Almoço em Palermo
+            <div class="transport">Opções próximas: Burger Joint, Parrilla Mi Viejo, cafés da região.</div>
+          </li>
+          <li>
+            <span class="time">14h00–15h30</span>
+            <strong>Bosques de Palermo</strong> + lago
+            <div class="transport">👣 10 min de caminhada suave a partir do Jardim Japonês/almoço.</div>
+          </li>
+          <li>
+            <span class="time">15h30–16h30</span>
+            <strong>Rosedal</strong> – dentro dos Bosques
+          </li>
+          <li>
+            <span class="time">16h30–17h30</span>
+            <strong>Floralis Genérica</strong>
+            <div class="transport">🚗 Uber 10 min dos Bosques até a Floralis.</div>
+          </li>
+          <li>
+            <span class="time">17h30–18h00</span>
+            <strong>Faculdade de Direito (UBA)</strong>
+            <div class="transport">👣 A faculdade fica ao lado da Floralis – só atravessar a praça.</div>
+          </li>
+          <li>
+            <span class="time">Noite</span>
+            Jantar simples e retorno
+            <div class="transport">🚗 Uber 12–15 min de volta ao hotel.</div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Dia 3 -->
+    <div class="card day-card" data-day="3">
+      <div class="day">
+        <div class="day-header">
+          <div class="day-title">Dia 3 – Domingo, 18/01 – Caminito cedo + San Telmo</div>
+          <div class="day-sub">Fotos vazias no Caminito + Feira de San Telmo e Costanera</div>
+        </div>
+        <ul class="schedule">
+          <li>
+            <span class="time">09h00</span>
+            Saída do hotel para o <strong>Caminito</strong>
+            <div class="transport">🚗 Uber direto ao Caminito (10–15 min). Evitar ir de ônibus/metro pela região.</div>
+          </li>
+          <li>
+            <span class="time">09h20–10h45</span>
+            <strong>Caminito</strong> quase vazio para fotos lindas
+          </li>
+          <li>
+            <span class="time">11h00</span>
+            Uber para <strong>Plaza Dorrego – Feira de San Telmo</strong>
+            <div class="transport">🚗 10–12 min de Caminito até a Feira. Não ir a pé entre La Boca e San Telmo.</div>
+          </li>
+          <li>
+            <span class="time">11h15–13h00</span>
+            Feira de San Telmo + compras e fotos
+          </li>
+          <li>
+            <span class="time">13h00–14h00</span>
+            Almoço no <strong>Mercado de San Telmo</strong>
+            <div class="transport">👣 5 min de caminhada da praça até o mercado.</div>
+          </li>
+          <li>
+            <span class="time">14h00–15h30</span>
+            Passeio pela Calle Defensa e arredores
+          </li>
+          <li>
+            <span class="time">16h00–18h00</span>
+            <strong>Costanera</strong> – choripán e vista do Rio da Prata (opcional)
+            <div class="transport">🚗 Uber 10–15 min da Feira/mercado até a Costanera; retorno ao hotel também de Uber.</div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Dia 4 -->
+    <div class="card day-card" data-day="4">
+      <div class="day">
+        <div class="day-header">
+          <div class="day-title">Dia 4 – Segunda, 19/01 – Plaza de Mayo + Puerto Madero</div>
+          <div class="day-sub">Centro histórico + porto moderno</div>
+        </div>
+        <ul class="schedule">
+          <li>
+            <span class="time">09h30–11h30</span>
+            <strong>Plaza de Mayo</strong>, Casa Rosada, Catedral e Cabildo
+            <div class="transport">👣 7–10 min a pé do hotel até a Plaza de Mayo.</div>
+          </li>
+          <li>
+            <span class="time">11h30–12h00</span>
+            Caminhada pela <strong>Avenida de Mayo</strong>
+          </li>
+          <li>
+            <span class="time">12h00–13h00</span>
+            Café ou almoço leve no <strong>Café Tortoni</strong> (opcional)
+          </li>
+          <li>
+            <span class="time">13h00–14h00</span>
+            Caminhada até <strong>Puerto Madero</strong>
+            <div class="transport">👣 ~12 min de caminhada do Tortoni até a região da Puente de la Mujer.</div>
+          </li>
+          <li>
+            <span class="time">14h00–15h30</span>
+            Almoço econômico em Puerto Madero
+            <div class="transport">Opções: lanches/fast food, empanadas, comidas simples ao longo do porto.</div>
+          </li>
+          <li>
+            <span class="time">15h30–17h30</span>
+            Caminhada na <strong>Reserva Ecológica Costanera Sur</strong>
+            <div class="transport">👣 entrada a ~15 min caminhando pela orla.</div>
+          </li>
+          <li>
+            <span class="time">Noite</span>
+            Retorno ao hotel
+            <div class="transport">🚗 Uber da Costanera ao hotel (~15 min) ou caminhada longa de volta por Puerto Madero.</div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Dia 5 -->
+    <div class="card day-card" data-day="5">
+      <div class="day">
+        <div class="day-header">
+          <div class="day-title">Dia 5 – Terça, 20/01 – Colonia del Sacramento (Uruguai)</div>
+          <div class="day-sub">Bate-volta de balsa – cidade histórica, tranquila e fotogênica</div>
+        </div>
+        <div class="highlight">
+          Horários de balsa (Buquebus ou Colonia Express) variam conforme o dia.
+          Use estes horários como estrutura-base (manhã para ir, final da tarde para voltar)
+          e ajuste de acordo com o bilhete comprado.
+        </div>
+        <ul class="schedule">
+          <li>
+            <span class="time">~07h00</span>
+            Saída do hotel rumo ao terminal da balsa
+            <div class="transport">🚗 Uber até o terminal escolhido (Buquebus ou Colonia Express), ~15 min.</div>
+          </li>
+          <li>
+            <span class="time">~08h30</span>
+            Embarque para <strong>Colonia del Sacramento</strong>
+            <div class="transport">⛴️ Travessia ~1h15–1h30.</div>
+          </li>
+          <li>
+            <span class="time">Manhã e início da tarde</span>
+            Passeio a pé por:
+            <div class="transport">
+              👣 Calle de los Suspiros • Portón de Campo • Farol de Colonia • Plaza Mayor • Igrejas históricas • Orla do Rio da Prata.
+            </div>
+          </li>
+          <li>
+            <span class="time">Almoço</span>
+            Restaurantes na parte histórica
+            <div class="transport">Sugestões: El Drugstore, Mercadito del Centro, cafés simples da praça.</div>
+          </li>
+          <li>
+            <span class="time">~17h00</span>
+            Balsa de retorno a Buenos Aires
+          </li>
+          <li>
+            <span class="time">Noite</span>
+            Uber do terminal ao hotel, jantar leve e descanso.
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Dia 6 -->
+    <div class="card day-card" data-day="6">
+      <div class="day">
+        <div class="day-header">
+          <div class="day-title">Dia 6 – Quarta, 21/01 – Tigre de trem + noite leve</div>
+          <div class="day-sub">Passeio de rio + preparação para o voo de madrugada</div>
+        </div>
+        <ul class="schedule">
+          <li>
+            <span class="time">09h00</span>
+            Saída do hotel em direção à estação Retiro
+            <div class="transport">🚗 Uber (~10–15 min). Se preferir metrô, usar linha C até Retiro.</div>
+          </li>
+          <li>
+            <span class="time">09h30</span>
+            Trem para <strong>Tigre</strong>
+            <div class="transport">🚆 Linha Mitre, ramal Retiro–Tigre. Trens a cada ~15 min. Viagem ~55 min.</div>
+          </li>
+          <li>
+            <span class="time">10h30–12h00</span>
+            Passeio pelo <strong>Puerto de Frutos</strong>
+            <div class="transport">👣 ~8 min de caminhada da estação Tigre até o Puerto de Frutos.</div>
+          </li>
+          <li>
+            <span class="time">12h00–13h00</span>
+            Almoço simples na região
+          </li>
+          <li>
+            <span class="time">13h00–15h30</span>
+            Caminhada pelo <strong>Paseo Victorica</strong> e margem do delta
+          </li>
+          <li>
+            <span class="time">16h00</span>
+            Trem de volta Tigre → Retiro
+          </li>
+          <li>
+            <span class="time">17h30</span>
+            Chegada ao hotel e descanso
+            <div class="transport">🚗 Uber ou metrô de Retiro até o hotel.</div>
+          </li>
+          <li>
+            <span class="time">Noite (19h30–21h30)</span>
+            Jantar bem perto do hotel
+            <div class="transport">
+              Sugestões: Pizzaria Guerrin (repeat porque é boa 😄), Las Cuartetas ou outro restaurante simples no Centro.
+              Voltar cedo para arrumar malas.
+            </div>
+          </li>
+          <li>
+            <span class="time">00h30 (já dia 22)</span>
+            Saída do hotel para o aeroporto Ezeiza
+            <div class="transport">🚗 Uber direto ao EZE (~35–40 min de madrugada).</div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Dicas finais -->
+    <div class="card tips-card">
+      <h2>💡 Dicas rápidas de economia &amp; segurança</h2>
+      <div class="section-title">Transporte</div>
+      <ul class="tips-list">
+        <li>Comprar o cartão <strong>SUBE</strong> em kioscos ou estações para usar metrô, ônibus e trens.</li>
+        <li>Para La Boca (Caminito) e volta tarde da noite, priorizar <strong>Uber/táxi</strong>.</li>
+        <li>Trem para Tigre: use sempre o ramal <strong>Retiro–Tigre</strong> da linha Mitre.</li>
+      </ul>
+
+      <div class="section-title">Comida barata</div>
+      <ul class="tips-list">
+        <li>Medialunas e cafés em padarias locais são muito mais baratos que cafés turísticos.</li>
+        <li>Guerrin, Kentucky, Las Cuartetas e mercados (San Telmo, Puerto de Frutos, Recoleta Mall) têm ótimo custo-benefício.</li>
+        <li>Para sorvetes: <strong>Rapanui</strong> e <strong>Franui</strong> valem cada colherada.</li>
+      </ul>
+
+    <div class="section-title">Segurança básica</div>
+      <ul class="tips-list">
+        <li>Evitar caminhar a pé entre La Boca e San Telmo ou zonas muito afastadas; use Uber.</li>
+        <li>Bolsa sempre fechada, celular mais guardado em ruas muito cheias (Florida, feiras, metrô).</li>
+        <li>Levar sempre uma cópia digital dos documentos e do seguro-viagem.</li>
+      </ul>
+    </div>
+
+    <!-- Diário de bordo (será populado dinamicamente via script.js). Se não houver
+         nenhuma nota registrada, esta seção permanecerá oculta. -->
+    <section id="diary" class="card diary-section hidden">
+      <h2>📖 Diário de bordo</h2>
+      <p class="subtitle">Aqui ficam registradas as nossas notas e memórias ao longo da viagem.</p>
+      <div id="diary-list"></div>
+    </section>
+    <!-- Diário compartilhado com login. Requer configurar Supabase (URL + anon key) -->
+    <section class="card cloud-diary" id="cloud-diary">
+      <h2>🔐 Diário compartilhado na nuvem</h2>
+      <p class="subtitle">Entre com e-mail e senha para salvar memórias que ficam disponíveis para nós dois.</p>
+
+      <div class="notice" id="cloud-diary-notice">
+        Adicione a URL e a anon key do seu projeto Supabase nas metas <code>supabase-url</code> e
+        <code>supabase-anon-key</code> para ativar o login e o diário compartilhado.
+      </div>
+
+      <form id="auth-form" class="auth-form hidden" autocomplete="on">
+        <div class="form-row">
+          <label for="auth-email">E-mail</label>
+          <input id="auth-email" name="email" type="email" required placeholder="seu@email.com" />
+        </div>
+        <div class="form-row">
+          <label for="auth-password">Senha</label>
+          <input id="auth-password" name="password" type="password" required placeholder="••••••••" minlength="6" />
+        </div>
+        <div class="auth-actions">
+          <button type="submit" data-action="login">Entrar</button>
+          <button type="submit" data-action="signup" class="ghost">Criar conta</button>
+          <button type="button" id="logout-btn" class="secondary hidden">Sair</button>
+        </div>
+        <p id="auth-feedback" class="feedback" role="status" aria-live="polite"></p>
+      </form>
+
+      <div id="cloud-diary-area" class="hidden">
+        <form id="cloud-entry-form" class="entry-form">
+          <div class="form-row inline">
+            <label for="entry-day">Dia</label>
+            <input id="entry-day" name="day" type="number" min="1" max="31" placeholder="1" />
+          </div>
+          <div class="form-row">
+            <label for="entry-note">Escreva sua memória</label>
+            <textarea id="entry-note" name="note" rows="3" required placeholder="O que fizemos hoje?" maxlength="1000"></textarea>
+          </div>
+          <div class="auth-actions">
+            <button type="submit">Salvar memória</button>
+            <button type="button" id="refresh-entries" class="ghost">Atualizar lista</button>
+          </div>
+          <p id="entry-feedback" class="feedback" role="status" aria-live="polite"></p>
+        </form>
+
+        <div id="cloud-entries" class="cloud-entries">
+          <p class="subtitle">Entradas mais recentes aparecerão aqui.</p>
+          <div id="cloud-entry-list" class="entry-list"></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Botão flutuante “Voltar ao topo” -->
+  <button id="back-to-top" class="back-to-top" aria-label="Voltar ao topo">↑</button>
+
+  <!-- Script externo para interatividade -->
+  <script src="script.js"></script>
+  <!-- Módulo de memórias integrado; necessário para login e upload de memórias compartilhadas -->
+  <script src="memories.js"></script>
+
+  <!-- Rodapé personalizado -->
+  <footer class="site-footer">
+    <p>
+      Com amor, Carina &amp; Gui – Janeiro 2026 <span aria-hidden="true">❤️</span>
+    </p>
+  </footer>
+</body>
+</html>
