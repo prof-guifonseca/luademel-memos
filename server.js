@@ -40,20 +40,28 @@ const USERS = process.env.USERS
         return JSON.parse(process.env.USERS);
       } catch (err) {
         console.warn('Unable to parse USERS env var, falling back to default users');
-        return { carina: 'amore', gui: 'amoreGui', admin: 'password' };
+        return { carina: 'senha123', gui: 'senha123', admin: 'senha123' };
       }
     })()
-  : { carina: 'amore', gui: 'amoreGui', admin: 'password' };
+  : { carina: 'senha123', gui: 'senha123', admin: 'senha123' };
+
+// Directory used to persist the JSON database and uploaded media. Allows the
+// app to target a persistent disk when deployed (e.g., on Render) while still
+// defaulting to the project root during local development.
+const dataDir = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : __dirname;
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
 
 // Location of the JSON file that stores memories and comments. If the file
 // doesn't exist it will be created on first access.
-const dbFile = path.join(__dirname, 'database.json');
+const dbFile = path.join(dataDir, 'database.json');
 
 // Ensure the uploads directory exists at startup. All uploaded media will be
 // stored here and served statically under the /uploads route.
-const uploadsDir = path.join(__dirname, 'uploads');
+const uploadsDir = path.join(dataDir, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
+  fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
 /**
