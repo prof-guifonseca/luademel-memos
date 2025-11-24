@@ -18,7 +18,7 @@
   /**
    * Monta toda a interface de memórias dentro do contêiner fornecido.
    * A UI inclui:
-   *  • Seção de login com formulário simples (usuário e senha).
+   *  • Seção de login estilizada com e-mail e senha.
    *  • Botão de logout exibido após autenticação.
    *  • Seção de publicação de memória (título, texto, data, tags, local,
    *    status e upload de mídia) com barra de progresso.
@@ -38,62 +38,51 @@
     heading.style.marginBottom = '16px';
     container.appendChild(heading);
 
-    // Botão de logout (inicialmente oculto)
-    const logoutBtn = document.createElement('button');
-    logoutBtn.id = 'mem-logout-btn';
-    logoutBtn.textContent = 'Sair';
-    logoutBtn.className = 'logout-btn';
-    logoutBtn.style.marginBottom = '16px';
-    logoutBtn.style.display = 'none';
-    container.appendChild(logoutBtn);
-
-    // Login section
+    // Bloco de login inspirado no markup estilizado do diário na nuvem
     const loginSection = document.createElement('section');
     loginSection.id = 'mem-login-section';
-    loginSection.className = 'card';
-    const loginHeading = document.createElement('h3');
-    loginHeading.textContent = 'Entrar';
-    const loginDesc = document.createElement('p');
-    loginDesc.textContent = 'Faça login para publicar e visualizar suas memórias.';
-    const loginForm = document.createElement('form');
-    loginForm.id = 'mem-login-form';
-    loginForm.style.display = 'flex';
-    loginForm.style.flexDirection = 'column';
-    loginForm.style.gap = '12px';
-    // Usuário
-    const userLabel = document.createElement('label');
-    userLabel.textContent = 'Usuário';
-    const userInput = document.createElement('input');
-    userInput.type = 'text';
-    userInput.name = 'username';
-    userInput.required = true;
-    userLabel.appendChild(userInput);
-    // Senha
-    const passLabel = document.createElement('label');
-    passLabel.textContent = 'Senha';
-    const passInput = document.createElement('input');
-    passInput.type = 'password';
-    passInput.name = 'password';
-    passInput.required = true;
-    passLabel.appendChild(passInput);
-    // Submit
-    const loginSubmit = document.createElement('button');
-    loginSubmit.type = 'submit';
-    loginSubmit.textContent = 'Entrar';
-    loginSubmit.style.alignSelf = 'flex-start';
-    // Error message
-    const loginError = document.createElement('div');
-    loginError.id = 'mem-login-error';
-    loginError.style.color = '#e85d75';
-    loginError.style.marginTop = '8px';
-    // Assemble form
-    loginForm.appendChild(userLabel);
-    loginForm.appendChild(passLabel);
-    loginForm.appendChild(loginSubmit);
-    loginSection.appendChild(loginHeading);
-    loginSection.appendChild(loginDesc);
-    loginSection.appendChild(loginForm);
-    loginSection.appendChild(loginError);
+    loginSection.className = 'card cloud-diary';
+    loginSection.innerHTML = `
+      <h3>🔐 Diário compartilhado na nuvem</h3>
+      <p class="subtitle">Entre com e-mail e senha para salvar e ler memórias conjuntas.</p>
+      <form id="mem-login-form" class="auth-form" autocomplete="on">
+        <div class="form-row">
+          <label for="mem-auth-email">E-mail</label>
+          <input
+            id="mem-auth-email"
+            name="username"
+            type="email"
+            required
+            placeholder="seu@email.com"
+          />
+        </div>
+        <div class="form-row">
+          <label for="mem-auth-password">Senha</label>
+          <input
+            id="mem-auth-password"
+            name="password"
+            type="password"
+            required
+            placeholder="••••••••"
+            minlength="6"
+          />
+        </div>
+        <div class="auth-actions">
+          <button type="submit" data-action="login">Entrar</button>
+          <button type="submit" data-action="signup" class="ghost">Criar conta</button>
+          <button type="button" id="mem-logout-btn" class="secondary hidden">Sair</button>
+        </div>
+        <p id="mem-auth-feedback" class="feedback" role="status" aria-live="polite"></p>
+      </form>
+    `;
+
+    const loginForm = loginSection.querySelector('#mem-login-form');
+    const userInput = loginSection.querySelector('#mem-auth-email');
+    const passInput = loginSection.querySelector('#mem-auth-password');
+    const logoutBtn = loginSection.querySelector('#mem-logout-btn');
+    const loginFeedback = loginSection.querySelector('#mem-auth-feedback');
+    const loginRows = loginSection.querySelectorAll('.form-row');
+    const loginActionButtons = loginSection.querySelectorAll('button[data-action]');
     container.appendChild(loginSection);
 
     // Publish section (hidden until authenticated)
@@ -166,7 +155,7 @@
     statusLabel.appendChild(statusSelect);
     // Media
     const mediaLabel = document.createElement('label');
-    mediaLabel.textContent = 'Mídia (imagens ou vídeos) – até 10 MB cada';
+    mediaLabel.textContent = 'Mídia (imagens ou vídeos) – até 10 MB cada';
     const mediaInput = document.createElement('input');
     mediaInput.type = 'file';
     mediaInput.name = 'media';
@@ -348,8 +337,11 @@
       publishSection.style.display = 'none';
       filterSection.style.display = 'none';
       listSection.style.display = 'none';
-      logoutBtn.style.display = 'none';
-      loginError.textContent = '';
+      loginRows.forEach((row) => row.classList.remove('hidden'));
+      loginActionButtons.forEach((btn) => btn.classList.remove('hidden'));
+      logoutBtn.classList.add('hidden');
+      loginFeedback.textContent = '';
+      loginFeedback.classList.remove('error');
       publishError.textContent = '';
       publishSuccess.textContent = '';
 
@@ -371,12 +363,15 @@
      * memórias existentes com filtros padrão.
      */
     function showApp() {
-      loginSection.style.display = 'none';
+      loginSection.style.display = '';
       publishSection.style.display = '';
       filterSection.style.display = '';
       listSection.style.display = '';
-      logoutBtn.style.display = '';
-      loginError.textContent = '';
+      loginRows.forEach((row) => row.classList.add('hidden'));
+      loginActionButtons.forEach((btn) => btn.classList.add('hidden'));
+      logoutBtn.classList.remove('hidden');
+      loginFeedback.textContent = 'Sessão ativa.';
+      loginFeedback.classList.remove('error');
       publishError.textContent = '';
       publishSuccess.textContent = '';
       loadMemories();
@@ -600,10 +595,23 @@
     // Event bindings
     loginForm.addEventListener('submit', async (ev) => {
       ev.preventDefault();
-      loginError.textContent = '';
+      loginFeedback.textContent = '';
+      loginFeedback.classList.remove('error');
+
+      const action =
+        (ev.submitter && ev.submitter.dataset && ev.submitter.dataset.action) || 'login';
+
+      if (action !== 'login') {
+        loginFeedback.textContent =
+          'Cadastro ainda não disponível aqui. Use a conta existente para entrar.';
+        loginFeedback.classList.add('error');
+        return;
+      }
+
       const username = userInput.value.trim();
       const password = passInput.value.trim();
       if (!username || !password) return;
+
       try {
         const res = await fetch('/auth/login', {
           method: 'POST',
@@ -613,13 +621,16 @@
         });
         const data = await res.json();
         if (res.ok) {
+          loginFeedback.textContent = 'Login realizado com sucesso!';
           // Login bem-sucedido
           showApp();
         } else {
-          loginError.textContent = data.error || 'Falha no login.';
+          loginFeedback.textContent = data.error || 'Falha no login.';
+          loginFeedback.classList.add('error');
         }
       } catch (err) {
-        loginError.textContent = 'Erro ao conectar.';
+        loginFeedback.textContent = 'Erro ao conectar.';
+        loginFeedback.classList.add('error');
       }
     });
 
