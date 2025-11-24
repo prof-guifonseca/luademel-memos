@@ -788,3 +788,50 @@ html.theme-dark .cloud-entry {
 
 .feedback.error {
   color: #d1435b;
+}
+
+.feedback.success {
+  color: #2a9d8f;
+}
+
+.entry-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.memory-meta,
+.memory-location {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.memory-meta {
+  margin-bottom: 6px;
+}
+
+.memory-location {
+  margin-top: 4px;
+}
+
+.memory-media {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.memory-media img,
+.memory-media video {
+  max-width: 100%;
+  border-radius: 6px;
+}
+
+.memory-media video {
+  max-height: 200px;
+}
+
+.upload-progress {
+  width: 100%;
+  height: 8px;
+}
